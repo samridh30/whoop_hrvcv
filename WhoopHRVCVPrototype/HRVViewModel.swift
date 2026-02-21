@@ -2,35 +2,28 @@ import Foundation
 
 @MainActor
 final class HRVViewModel: ObservableObject {
-    @Published var clientID: String = ""
-    @Published var clientSecret: String = ""
-    @Published var accessToken: String = ""
     @Published var isLoading = false
     @Published var samples: [HRVSample] = []
     @Published var errorMessage: String?
+    @Published var requiresLogin = false
 
-    private let client = WhoopAPIClient()
+    private var client: WhoopAPIClient?
 
     init() {
-        loadConfig()
-    }
-
-    func loadConfig() {
         do {
             let config = try WhoopConfig.loadFromBundle()
-            clientID = config.clientID
-            clientSecret = config.clientSecret
-            accessToken = config.accessToken
-            errorMessage = nil
+            client = WhoopAPIClient(config: config)
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
-    func fetchLastWeekHRV() async {
-        let token = accessToken.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !token.isEmpty else {
-            errorMessage = WhoopAPIError.missingAccessToken.localizedDescription
+    var loginURL: URL? {
+        client?.authStartURL()
+    }
+
+    func refreshHRV() async {
+        guard let client else {
             return
         }
 
@@ -42,7 +35,13 @@ final class HRVViewModel: ObservableObject {
         }
 
         do {
-            samples = try await client.fetchLastWeekHRV(accessToken: token)
+            samples = try await client.fetchLastWeekHRV()
+            requiresLogin = false
+        } catch let error as WhoopAPIError {
+            if case .loginRequired = error {
+                requiresLogin = true
+            }
+            errorMessage = error.localizedDescription
         } catch {
             errorMessage = error.localizedDescription
         }

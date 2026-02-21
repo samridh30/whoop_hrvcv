@@ -1,46 +1,56 @@
 # whoop_hrvcv
 
-A lightweight iOS app prototype to fetch WHOOP HRV data, which will be used to compute weekly coefficient of variation (CV).
+Lightweight iOS app that shows your WHOOP HRV values (last 7 days) with backend-managed OAuth and token refresh.
 
-## What is implemented
+## What changed
 
-The first milestone is complete in `WhoopHRVCVPrototype/`:
+The app is now user-facing only:
+- No client ID/client secret/token fields in iOS UI
+- On launch, app fetches HRV automatically
+- If WHOOP is not connected yet, app shows a single **Login to WHOOP** button
+- Backend stores refresh token and refreshes access token automatically
 
-- `WhoopHRVCVPrototype/WhoopAPIClient.swift`: Calls WHOOP Developer API v2 `GET /recovery`
-- `WhoopHRVCVPrototype/WhoopModels.swift`: Decodes recovery data, including `score.hrv_rmssd_milli`
-- `WhoopHRVCVPrototype/WhoopConfig.swift`: Loads WHOOP OAuth config from plist
-- `WhoopHRVCVPrototype/HRVViewModel.swift`: Loads config and fetches the last 7 days of HRV samples
-- `WhoopHRVCVPrototype/ContentView.swift`: UI showing Client ID/Client Secret and fetching HRV
+## Project structure
 
-## WHOOP setup
+- `/Users/samridhsharma/whoop_hrvcv/WhoopHRVCVPrototype`: iOS app source
+- `/Users/samridhsharma/whoop_hrvcv/backend`: backend service for WHOOP OAuth + refresh + HRV proxy
 
-1. Create a WHOOP developer app and enable scope `read:recovery`.
-2. Fill `/Users/samridhsharma/whoop_hrvcv/WhoopHRVCVPrototype/WhoopConfig.plist`:
-   - `CLIENT_ID`
-   - `CLIENT_SECRET`
-   - `REDIRECT_URI`
-   - `ACCESS_TOKEN`
-3. Tap **Fetch Last 7 Days HRV**.
+## Backend setup (required)
 
-## API details used
+1. Open `/Users/samridhsharma/whoop_hrvcv/backend/.env.example` and copy it to `.env`.
+2. Fill these values in `/Users/samridhsharma/whoop_hrvcv/backend/.env`:
+   - `WHOOP_CLIENT_ID`
+   - `WHOOP_CLIENT_SECRET`
+   - `WHOOP_REDIRECT_URI` (default: `http://localhost:8787/auth/callback`)
+   - `BACKEND_BASE_URL` (default: `http://localhost:8787`)
+   - `WHOOP_SCOPE` (use `offline read:recovery`)
+3. Start backend:
 
-- Base URL: `https://api.prod.whoop.com/developer/v2`
-- Endpoint: `GET /recovery`
-- Query params:
-  - `start` (ISO-8601)
-  - `end` (ISO-8601)
-  - `limit` (currently `25`)
-  - `nextToken` (for pagination)
-- HRV field extracted: `score.hrv_rmssd_milli`
+```bash
+cd /Users/samridhsharma/whoop_hrvcv/backend
+npm install
+npm start
+```
 
-## Running this in Xcode
+Backend endpoints used by app:
+- `GET /auth/start` (starts WHOOP login)
+- `GET /auth/callback` (stores refresh/access token)
+- `GET /hrv?days=7` (returns HRV values)
 
-1. Create a new iOS App project in Xcode.
-2. Copy all files from `WhoopHRVCVPrototype/` into your app target.
-3. Build and run on simulator/device.
+## iOS app setup
 
-## Next milestone
+1. In `/Users/samridhsharma/whoop_hrvcv/WhoopHRVCVPrototype/WhoopConfig.plist`, set:
+   - `BACKEND_BASE_URL` (default `http://localhost:8787`)
+2. Open `/Users/samridhsharma/whoop_hrvcv/WhoopHRVCV.xcodeproj` in Xcode.
+3. Run app on simulator/device.
 
-Compute weekly CV from fetched HRV values:
+## User flow
 
-`CV = (standardDeviation(HRV) / mean(HRV)) * 100`
+1. Open app.
+2. If first-time setup, tap **Login to WHOOP** and complete browser auth.
+3. Return to app and tap **I Have Logged In, Refresh**.
+4. After that, opening the app refreshes HRV automatically.
+
+## Security note
+
+Do not keep real WHOOP secrets in the iOS app bundle. Keep `WHOOP_CLIENT_SECRET` only in backend `.env`.

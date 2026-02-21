@@ -1,10 +1,7 @@
 import Foundation
 
 struct WhoopConfig {
-    let clientID: String
-    let clientSecret: String
-    let redirectURI: String
-    let accessToken: String
+    let backendBaseURL: URL
 
     static func loadFromBundle() throws -> WhoopConfig {
         guard
@@ -16,23 +13,13 @@ struct WhoopConfig {
         }
 
         guard
-            let clientID = raw["CLIENT_ID"] as? String,
-            let clientSecret = raw["CLIENT_SECRET"] as? String,
-            let redirectURI = raw["REDIRECT_URI"] as? String,
-            let accessToken = raw["ACCESS_TOKEN"] as? String,
-            !clientID.isEmpty,
-            !clientSecret.isEmpty,
-            !redirectURI.isEmpty,
-            !accessToken.isEmpty
+            let backendURLString = raw["BACKEND_BASE_URL"] as? String,
+            let backendBaseURL = URL(string: backendURLString),
+            !backendURLString.isEmpty
         else {
             throw WhoopAPIError.missingConfig
         }
 
-        return WhoopConfig(
-            clientID: clientID,
-            clientSecret: clientSecret,
-            redirectURI: redirectURI,
-            accessToken: accessToken
-        )
+        return WhoopConfig(backendBaseURL: backendBaseURL)
     }
 }
