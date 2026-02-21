@@ -6,6 +6,7 @@ final class HRVViewModel: ObservableObject {
     @Published var clientSecret: String = ""
     @Published var accessToken: String = ""
     @Published var isLoading = false
+    @Published var isValuesPopupVisible = false
     @Published var samples: [HRVSample] = []
     @Published var errorMessage: String?
 
@@ -43,6 +44,7 @@ final class HRVViewModel: ObservableObject {
 
         do {
             samples = try await client.fetchLastWeekHRV(accessToken: token)
+            isValuesPopupVisible = true
         } catch {
             errorMessage = error.localizedDescription
         }

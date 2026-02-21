@@ -65,18 +65,41 @@ struct ContentView: View {
                         .font(.footnote)
                 }
 
-                List(viewModel.samples) { sample in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(sample.date, style: .date)
-                            .font(.subheadline)
-                        Text(String(format: "HRV RMSSD: %.1f ms", sample.hrvRMSSDMilli))
-                            .font(.body)
+                if !viewModel.samples.isEmpty {
+                    Button {
+                        viewModel.isValuesPopupVisible = true
+                    } label: {
+                        Text("Show HRV Values Popup")
+                            .frame(maxWidth: .infinity)
                     }
+                    .buttonStyle(.bordered)
                 }
-                .listStyle(.plain)
             }
             .padding()
             .navigationTitle("WHOOP HRV")
+            .sheet(isPresented: $viewModel.isValuesPopupVisible) {
+                HRVValuesSheet(samples: viewModel.samples)
+            }
+        }
+    }
+}
+
+private struct HRVValuesSheet: View {
+    let samples: [HRVSample]
+
+    var body: some View {
+        NavigationStack {
+            List(samples) { sample in
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(sample.date, style: .date)
+                        .font(.subheadline)
+                    Text(String(format: "HRV RMSSD: %.1f ms", sample.hrvRMSSDMilli))
+                        .font(.body)
+                }
+                .padding(.vertical, 4)
+            }
+            .navigationTitle("All HRV Values")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
