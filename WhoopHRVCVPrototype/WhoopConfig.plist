@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>c734c1f9-e77c-40ff-b377-531227e8ac10</string>
+	<key>CLIENT_SECRET</key>
+	<string>6577d280e32e1feaf3b2d6914c4a5c5397dd07c8c4d97dd2a3c56857e1eed919</string>
+	<key>REDIRECT_URI</key>
+	<string>https://whoop/samridh-hrvcv</string>
+	<key>ACCESS_TOKEN</key>
+	<string>3GcYbax666cvehJAB1Hz5aHaLM5RGq74phFiP8wGc8E.T2k5f_Y_VNa1-oezd-NfbhTQ3QPy1-UY0nr9oFWedvE</string>
+</dict>
+</plist>
